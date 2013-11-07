@@ -1,23 +1,14 @@
 package org.fe.up.joao.busphoneinspector;
 
-import net.sourceforge.zbar.Config;
-import net.sourceforge.zbar.Image;
-import net.sourceforge.zbar.ImageScanner;
-import net.sourceforge.zbar.Symbol;
-import net.sourceforge.zbar.SymbolSet;
-
 import org.fe.up.joao.busphonevalidation.helper.CameraHelper;
 import org.fe.up.joao.busphonevalidation.helper.ComHelper;
+import org.fe.up.joao.busphonevalidation.helper.V;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.hardware.Camera;
-import android.hardware.Camera.AutoFocusCallback;
-import android.hardware.Camera.PreviewCallback;
-import android.hardware.Camera.Size;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,12 +16,23 @@ import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.hardware.Camera;
+import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.AutoFocusCallback;
+import android.hardware.Camera.Size;
 
-public class InspectorActivity extends Activity{
+/* Import ZBar Class files */
+import net.sourceforge.zbar.ImageScanner;
+import net.sourceforge.zbar.Image;
+import net.sourceforge.zbar.Symbol;
+import net.sourceforge.zbar.SymbolSet;
+import net.sourceforge.zbar.Config;
+
+public class InspectorActivity extends Activity
+{
 	QRCodeReader qrReader;
 	private boolean isPreviewing = true;
 	protected final int STATUS_DELAY_MILIS = 3000;
-	protected String busPlate;
 
 	static {
 		System.loadLibrary("iconv");
@@ -38,16 +40,14 @@ public class InspectorActivity extends Activity{
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		busPlate = getIntent().getStringExtra("bus_plate");
-		
-		qrReader = new QRCodeReader(this);
-		String busMessage = getString(R.string.bus) + " " + busPlate;
+		String busMessage = getString(R.string.bus) + " " + V.busLineNumber;
 
 		setContentView(R.layout.activity_inspector);
 
 		((TextView) findViewById(R.id.terminal_bus_label)).setText(busMessage);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		
+		qrReader = new QRCodeReader(this);
 		FrameLayout preview = (FrameLayout)findViewById(R.id.cameraPreview);
 		preview.addView(qrReader.mPreview);
 	}
@@ -99,6 +99,8 @@ public class InspectorActivity extends Activity{
 				InspectorActivity.this.isPreviewing = true;
 				((ImageView) findViewById(R.id.validationStatus)).setImageResource(R.drawable.instructions);;
 				((TextView) findViewById(R.id.status_message)).setText(R.string.instructions);
+				qrReader.mCamera.startPreview();
+				qrReader.mCamera.setPreviewCallback(qrReader.getPreviewCallBack());
 			}
 		}, STATUS_DELAY_MILIS);
 		
@@ -136,7 +138,19 @@ public class InspectorActivity extends Activity{
 		 * Instanciates camera stuff
 		 */
 		public QRCodeReader(Context context){
-			PreviewCallback previewCb = new PreviewCallback() {
+			PreviewCallback previewCb = getPreviewCallBack();
+			
+			mCamera = getCameraInstance();
+
+			/* Instance barcode scanner */
+			scanner = new ImageScanner();
+			scanner.setConfig(0, Config.X_DENSITY, 3);
+			scanner.setConfig(0, Config.Y_DENSITY, 3);
+			mPreview = new CameraHelper(context, mCamera, previewCb, autoFocusCB);
+		}
+
+		public PreviewCallback getPreviewCallBack() {
+			return new PreviewCallback() {
 				public void onPreviewFrame(byte[] data, Camera camera) {
 					Camera.Parameters parameters = camera.getParameters();
 					Size size = parameters.getPreviewSize();
@@ -165,22 +179,6 @@ public class InspectorActivity extends Activity{
 					}
 				}
 			};
-
-//			// Mimic continuous auto-focusing
-//			autoFocusCB = new AutoFocusCallback() {
-//				public void onAutoFocus(boolean success, Camera camera) {
-//					autoFocusHandler.postDelayed(doAutoFocus, 1000);
-//				}
-//			};
-
-//			autoFocusHandler = new Handler();
-			mCamera = getCameraInstance();
-
-			/* Instance barcode scanner */
-			scanner = new ImageScanner();
-			scanner.setConfig(0, Config.X_DENSITY, 3);
-			scanner.setConfig(0, Config.Y_DENSITY, 3);
-			mPreview = new CameraHelper(context, mCamera, previewCb, autoFocusCB);
 		}
 
 		/**
@@ -213,11 +211,11 @@ public class InspectorActivity extends Activity{
 			cameraCount = Camera.getNumberOfCameras();
 			for ( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
 				Camera.getCameraInfo( camIdx, cameraInfo );
-				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK  ) {
+				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT  ) {
 					try {
 						cam = Camera.open( camIdx );
 					} catch (RuntimeException e) {
-						Log.e("Camera Failed", "Camera failed to open: " + e.getLocalizedMessage());
+						Log.v("MyLog", "Camera failed to open: " + e.getLocalizedMessage());
 					}
 				}
 			}
@@ -251,10 +249,9 @@ public class InspectorActivity extends Activity{
 			String url = params[0];
 			try {
 				JSONObject response = new JSONObject(ComHelper.httpGet(url));
-				if (response.getString("status") == "failed") {
+				if (response.has("error")) {
 					return Integer.valueOf(INVALID_CODE);
 				} else {
-					//FIXME: verify JSON. server not working atm! :S
 					return Integer.valueOf(VALID_CODE);
 				}
 			} catch (JSONException e) {
@@ -278,7 +275,7 @@ public class InspectorActivity extends Activity{
 		 */
 		public void validate(String data) {
 			String[] dataArray = data.split(";");
-			if (dataArray.length != 3) {
+			if (dataArray.length != 2) {
 				/**
 				 * Malformed QRCode
 				 */
@@ -286,9 +283,10 @@ public class InspectorActivity extends Activity{
 				return;
 			}
 			String userID = dataArray[0];
-			String token = dataArray[1];
-			String ticketID = dataArray[2];
-			String url = String.format(ComHelper.serverURL + "users/%s/use/%s/t/%s", userID, ticketID, token);
+			String ticketID = dataArray[1];
+			// get 'bus/validate/:bus_id/:ticket_id/:user_id'
+			String url = String.format(ComHelper.serverURL + "bus/validate/%s/%s/%s", V.busID, ticketID, userID);
+			Log.v("MyLog", "Connecting to: " + url);
 			this.execute(url);
 		}
 
