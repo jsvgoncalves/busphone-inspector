@@ -211,7 +211,7 @@ public class InspectorActivity extends Activity
 			cameraCount = Camera.getNumberOfCameras();
 			for ( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
 				Camera.getCameraInfo( camIdx, cameraInfo );
-				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT  ) {
+				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK  ) {
 					try {
 						cam = Camera.open( camIdx );
 					} catch (RuntimeException e) {
