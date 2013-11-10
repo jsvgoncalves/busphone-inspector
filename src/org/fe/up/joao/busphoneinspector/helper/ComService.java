@@ -1,7 +1,6 @@
 package org.fe.up.joao.busphoneinspector.helper;
 
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.fe.up.joao.busphoneinspector.R;
@@ -24,7 +23,7 @@ public class ComService extends AsyncTask<String, String, String> {
 	protected void onPreExecute(){}
 	
 	public ComService(String url, Object object, String methodName, boolean showProgress) {
-		Log.e("mylog", url );
+		Log.v("mylog", url );
 		String full_url = serverURL + url;
 		this.methodName = methodName;
 		this.object = object;

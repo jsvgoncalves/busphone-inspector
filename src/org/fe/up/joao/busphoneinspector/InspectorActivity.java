@@ -1,20 +1,17 @@
 package org.fe.up.joao.busphoneinspector;
 
 import org.fe.up.joao.busphoneinspector.helper.CameraHelper;
-import org.fe.up.joao.busphoneinspector.helper.ComHelper;
+import org.fe.up.joao.busphoneinspector.helper.Ticket;
 import org.fe.up.joao.busphoneinspector.helper.V;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.AutoFocusCallback;
@@ -71,6 +68,45 @@ public class InspectorActivity extends Activity
 		super.onPause();
 		qrReader.releaseCamera();
 	}
+	
+	/**
+	 * Parses the data read from the QRCode and
+	 * verifies is the ticket is in the list
+	 * and if it is valid.
+	 * @param data
+	 */
+	public void validate(String data) {
+		Log.v("mylog", "Read symbol:" + data);
+		String[] dataArray = data.split(";");
+		if (dataArray.length != 2) {
+			/**
+			 * Malformed QRCode
+			 */
+			InspectorActivity.this.showValidationResult(READ_ERROR);
+			Log.v("mylog", "Read error");
+			return;
+		}
+		String userID = dataArray[0];
+		String ticketID = dataArray[1];
+		
+		if (V.tickets.containsKey(ticketID)){
+			//FIXME: verify time of validation
+			//FIXME: verify is userID matches
+			
+			Ticket ticket = V.tickets.get(ticketID);
+			String status = String.format(getString(R.string.ticket_status_ok), ticket.getPrettyDate());
+			Log.v("mylog", status);
+			TextView statusView = ((TextView) findViewById(R.id.status_message));
+			if (ticket.hasExpired) {
+				statusView.setTextColor(0xFFCC0000);
+			} else {
+				statusView.setTextColor(0xFF669900);
+			}
+			statusView.setText(status);
+		} else {
+			Log.v("mylog", "Key not found: " + ticketID);
+		}
+	}
 
 	/**
 	 * Updates the image and message on the screen
@@ -118,15 +154,10 @@ public class InspectorActivity extends Activity
 				qrReader.mCamera.setPreviewCallback(qrReader.getPreviewCallBack());
 			}
 		}, STATUS_DELAY_MILIS);
-		
 	}
 	
 	public void setPreviewing(boolean previewing){
-		if (previewing) {
-			isPreviewing = true;
-		} else {
-			
-		}
+		isPreviewing = previewing;
 	}
 	
 	public boolean isPreviewing(){
@@ -163,27 +194,6 @@ public class InspectorActivity extends Activity
 			scanner.setConfig(0, Config.Y_DENSITY, 3);
 			mPreview = new CameraHelper(context, mCamera, previewCb, autoFocusCB);
 		}
-		
-		/**
-		 * Parses the data read from the QRCode and
-		 * verifies is the ticket is in the list
-		 * and if it is valid.
-		 * @param data
-		 */
-		public void validate(String data) {
-			String[] dataArray = data.split(";");
-			if (dataArray.length != 2) {
-				/**
-				 * Malformed QRCode
-				 */
-				InspectorActivity.this.showValidationResult(READ_ERROR);
-				return;
-			}
-			String userID = dataArray[0];
-			String ticketID = dataArray[1];
-			
-			V.tickets.containsKey(ticketID);
-		}
 
 		public PreviewCallback getPreviewCallBack() {
 			return new PreviewCallback() {
@@ -207,10 +217,7 @@ public class InspectorActivity extends Activity
 						 */
 						SymbolSet syms = scanner.getResults();
 						for (Symbol sym : syms) {
-							Log.v("MyLog", "Read symbol:" + sym.getData());
-							validate(sym.getData());
-							
-							
+							InspectorActivity.this.validate(sym.getData());
 							return;
 						}
 					}

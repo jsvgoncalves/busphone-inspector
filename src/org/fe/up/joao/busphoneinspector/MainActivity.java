@@ -1,6 +1,7 @@
 package org.fe.up.joao.busphoneinspector;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.fe.up.joao.busphoneinspector.helper.JSONHelper;
 import org.fe.up.joao.busphoneinspector.helper.ComHelper;
@@ -22,6 +23,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Locale.setDefault(new Locale("pt_PT", "pt_PT"));
 		setContentView(R.layout.activity_main);
 	}
 	
@@ -42,12 +44,8 @@ public class MainActivity extends Activity {
 			}
 			
 			if (!busID.equals("")) {
-				new ComService(
-					//bus/b/:bus_id/
-					"bus/b/" + busID, 
-					MainActivity.this, 
-					"getTicketsDone", 
-					true);
+				//bus/b/:bus_id/
+				new ComService("bus/b/" + busID, this, "getTicketsDone", true);
 			}
 		}
 		

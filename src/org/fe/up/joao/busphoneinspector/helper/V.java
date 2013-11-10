@@ -34,9 +34,9 @@ public class V {
 					json.getString("ticket_type"),
 					json.getString("uuid"),
 					json.getString("bus_id"),
-					dateUsedTimeSince);
-				tickets.put(json.getString("id"), t);
-				Log.v("mylog","Ticket OK. Used " + dateUsedTimeSince);
+					dateUsedMillis);
+				tickets.put(json.getString("uuid"), t);
+				Log.v("mylog","Ticket " + json.getString("uuid") + ". Used " + dateUsedTimeSince);
 			} catch (JSONException e) {
 				Log.v("mylog","Invalid JSON while retrieving tickets!");
 			} catch (ParseException e) {

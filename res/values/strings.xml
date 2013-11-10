@@ -8,10 +8,8 @@
     <string name="start">Iniciar</string>
     <string name="validation_status_label">Estado da validação</string>
     
-    <!-- Strings para a activity Terminal -->
-    
-    <!-- Recebe uma data e hora no string format -->
-    <string name="start_label">Início: %s</string>
+    <!-- Strings para a activity Inspector -->
+	<string name="ticket_status_ok">Última validação: %s</string>
     
     <!-- Quando está em espera -->
     <string name="instructions">Coloque o código em frente à câmara.</string>
