@@ -31,6 +31,8 @@
 	<string name="validation_connection">Erro de Coneção. Avise o Motorista!</string>
 	
 	<string name="no_connection">Sem Ligação à Internet.</string>
+	
+	<string name="fetching_data">A obter dados</string>
 
 </resources>
 

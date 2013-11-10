@@ -1,8 +1,8 @@
 package org.fe.up.joao.busphoneinspector;
 
-import org.fe.up.joao.busphonevalidation.helper.CameraHelper;
-import org.fe.up.joao.busphonevalidation.helper.ComHelper;
-import org.fe.up.joao.busphonevalidation.helper.V;
+import org.fe.up.joao.busphoneinspector.helper.CameraHelper;
+import org.fe.up.joao.busphoneinspector.helper.ComHelper;
+import org.fe.up.joao.busphoneinspector.helper.V;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,7 +45,7 @@ public class InspectorActivity extends Activity
 		setContentView(R.layout.activity_inspector);
 
 		((TextView) findViewById(R.id.terminal_bus_label)).setText(busMessage);
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		
 		qrReader = new QRCodeReader(this);
 		FrameLayout preview = (FrameLayout)findViewById(R.id.cameraPreview);
@@ -211,7 +211,7 @@ public class InspectorActivity extends Activity
 			cameraCount = Camera.getNumberOfCameras();
 			for ( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
 				Camera.getCameraInfo( camIdx, cameraInfo );
-				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK  ) {
+				if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT  ) {
 					try {
 						cam = Camera.open( camIdx );
 					} catch (RuntimeException e) {
