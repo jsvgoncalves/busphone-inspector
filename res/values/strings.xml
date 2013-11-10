@@ -4,7 +4,7 @@
     <string name="app_name">BusPhone Inspector</string>
     <string name="action_settings">Settings</string>
     <string name="login">Login</string>
-    <string name="bus">Autocarro (ID)</string>
+    <string name="bus">Autocarro ID </string>
     <string name="start">Iniciar</string>
     <string name="validation_status_label">Estado da validação</string>
     

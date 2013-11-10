@@ -9,7 +9,6 @@ import org.fe.up.joao.busphoneinspector.helper.V;
 import org.fe.up.joao.busphoneinspector.InspectorActivity;
 import org.json.JSONObject;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -32,22 +31,33 @@ public class MainActivity extends Activity {
 	 * @param v
 	 */
 	public void startInspection(View v) {
-		String busPlate = ((EditText)findViewById(R.id.bus_plate_field)).getText().toString();
-		
-		if(!ComHelper.isOnline(getApplicationContext())){
-			Toast.makeText(getApplicationContext(), getString(R.string.no_connection), Toast.LENGTH_LONG).show();
-		}
-		
-		if (!busPlate.equals("")) {
-			new ComService(
+		String busID = ((EditText)findViewById(R.id.bus_plate_field)).getText().toString();
+
+		if (busID.equals("")) {
+			Toast.makeText(this, "ID está vazio", Toast.LENGTH_SHORT).show();
+		} else {
+			V.busID = busID;
+			if(!ComHelper.isOnline(getApplicationContext())){
+				Toast.makeText(getApplicationContext(), getString(R.string.no_connection), Toast.LENGTH_SHORT).show();
+			}
+			
+			if (!busID.equals("")) {
+				new ComService(
 					//bus/b/:bus_id/
-					"bus/b/" + busPlate, 
+					"bus/b/" + busID, 
 					MainActivity.this, 
 					"getTicketsDone", 
 					true);
+			}
 		}
+		
+		
 	}
 	
+	/**
+	 * Callback function 
+	 * @param result JSON
+	 */
 	public void getTicketsDone(String result) {
 		JSONObject json = JSONHelper.string2JSON(result);
 		String status = JSONHelper.getValue(json, "status");
