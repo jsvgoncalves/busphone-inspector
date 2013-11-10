@@ -78,72 +78,61 @@ public class InspectorActivity extends Activity
 	public void validate(String data) {
 		Log.v("mylog", "Read symbol:" + data);
 		String[] dataArray = data.split(";");
-		if (dataArray.length != 2) {
-			/**
-			 * Malformed QRCode
-			 */
-			InspectorActivity.this.showValidationResult(READ_ERROR);
-			Log.v("mylog", "Read error");
-			return;
-		}
-		String userID = dataArray[0];
-		String ticketID = dataArray[1];
-		
-		if (V.tickets.containsKey(ticketID)){
-			//FIXME: verify time of validation
-			//FIXME: verify is userID matches
-			
-			Ticket ticket = V.tickets.get(ticketID);
-			String status = String.format(getString(R.string.ticket_status_ok), ticket.getPrettyDate());
-			Log.v("mylog", status);
-			TextView statusView = ((TextView) findViewById(R.id.status_message));
-			if (ticket.hasExpired) {
-				statusView.setTextColor(0xFFCC0000);
-			} else {
-				statusView.setTextColor(0xFF669900);
-			}
-			statusView.setText(status);
-		} else {
-			Log.v("mylog", "Key not found: " + ticketID);
-		}
-	}
-
-	/**
-	 * Updates the image and message on the screen
-	 * after the user validates the ticket
-	 * @param statusCode
-	 */
-	protected void showValidationResult(int statusCode) {
-		
+		String status = "";
+		int color = 0;
 		int imgID;
-		String statusMsg;
-		switch (statusCode) {
-		case VALID_CODE:
-			imgID = R.drawable.ok;
-			statusMsg = getString(R.string.validation_ok);
-			break;
-		case READ_ERROR:
+		
+		if (dataArray.length != 2) {
+			// Bad QRCode
+			Log.v("mylog", "Read error");
 			imgID = R.drawable.error;
-			statusMsg = getString(R.string.validation_error);
-			break;
-		case INVALID_CODE:
-			imgID = R.drawable.invalid;
-			statusMsg = getString(R.string.validation_invalid);
-			break;
-		case SERVER_ERROR:
-			imgID = R.drawable.connection;
-			statusMsg = getString(R.string.validation_connection);
-			break;
-		default:
-			imgID = R.drawable.connection;
-			statusMsg = getString(R.string.validation_connection);
-			break;
+			color = 0xFFFF8800;
+			status = "Utilizador não coincide";
+		} else {
+			//Good QRCOde
+			String userID = dataArray[0];
+			String ticketID = dataArray[1];
+
+			if (V.tickets.containsKey(ticketID)){
+				// Ticket found
+				Ticket ticket = V.tickets.get(ticketID);
+				
+				if (userID.equals(ticket.userID)) {
+					// User is valid
+					if (ticket.hasExpired) {
+						// Ticket has expired!
+						color = 0xFFCC0000;
+						imgID = R.drawable.invalid;
+					} else {
+						// Ticket is valid!
+						color = 0xFF669900;
+						imgID = R.drawable.ok;
+					}
+					status = String.format(getString(R.string.ticket_status_ok), ticket.getPrettyDate());
+				} else {
+					// User doesn't match!
+					imgID = R.drawable.invalid;
+					color = 0xFF669900;
+					status = "Utilizador não coincide";
+				}
+				
+			} else {
+				// Ticket not found
+				imgID = R.drawable.invalid;
+				color = 0xFF669900;
+				status = "Bilhete não encontrado";
+			}
 		}
 		
+		Log.v("mylog", status);
+		TextView statusView = ((TextView) findViewById(R.id.status_message));
+		statusView.setText(status);
+		statusView.setTextColor(color);
 		((ImageView) findViewById(R.id.validationStatus)).setImageResource(imgID);
-		((TextView) findViewById(R.id.status_message)).setText(statusMsg);
+		((TextView) findViewById(R.id.status_message)).setText(status);
+
 		
-		
+		// Set a delayed reset to the status message and image
 		final Handler resetStatus = new Handler();
 		resetStatus.postDelayed(new Runnable() {
 			public void run() {
@@ -155,6 +144,8 @@ public class InspectorActivity extends Activity
 			}
 		}, STATUS_DELAY_MILIS);
 	}
+
+
 	
 	public void setPreviewing(boolean previewing){
 		isPreviewing = previewing;

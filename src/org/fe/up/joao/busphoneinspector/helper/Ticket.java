@@ -13,6 +13,7 @@ public class Ticket {
 	public int id = -1;
 	public int type = -1;
 	public String uuid = "Undefined";
+	public String userID;
 	public long date_used = -1;
 	public String bus_id = "Undefined";
 	public boolean hasExpired = false;
@@ -21,12 +22,13 @@ public class Ticket {
 	public final int expireTimeT2 = 30 * 60 * 1000; // 15 minutes
 	public final int expireTimeT3 = 60 * 60 * 1000; // 15 minutes
 
-	public Ticket(String id, String ticket_type, String uuid,
+	public Ticket(String id, String ticket_type, String uuid, String userID,
 			String bus_id, long date_used) {
 		super();
 		this.id = Integer.valueOf(id);
 		this.type = Integer.valueOf(ticket_type);
 		this.uuid = uuid;
+		this.userID = userID;
 		this.date_used = date_used;
 		this.bus_id = bus_id;
 		

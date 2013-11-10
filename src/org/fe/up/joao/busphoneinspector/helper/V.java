@@ -33,6 +33,7 @@ public class V {
 				Ticket t = new Ticket(json.getString("id"),
 					json.getString("ticket_type"),
 					json.getString("uuid"),
+					json.getString("user_id"),
 					json.getString("bus_id"),
 					dateUsedMillis);
 				tickets.put(json.getString("uuid"), t);

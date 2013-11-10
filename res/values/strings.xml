@@ -15,10 +15,10 @@
     <string name="instructions">Coloque o código em frente à câmara.</string>
     
     <!-- Quando o código nao é válido -->
-    <string name="invalid_ticket">Título inválido ou já utilizado. Escolha outro título.</string>
+    <string name="invalid_ticket">Título inválido.</string>
     
     <!-- Quando houve um erro de leitura do código -->
-    <string name="error_reading">Título inválido ou já utilizado. Escolha outro título.</string>
+    <string name="error_reading">Erro: código mal formado.</string>
     
     <!-- Mensagem que surge quando o bilhete é válido. Parâmetros: ticket type, duração -->
 	<string name="valid_status">Título: %s</string>
